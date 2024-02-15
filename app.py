@@ -34,7 +34,7 @@ def is_logged_in(f):
 		if 'logged_in' in session:
 			return f(*args, **kwargs)
 		else:
-			flash('Nice try, Tricks don\'t work, bud!! Please Login :)', 'danger')
+			flash('Nice try, Tricks don\'t work, bud!! Please Login:)', 'danger')
 			return redirect(url_for('login'))
 	return wrap
 
