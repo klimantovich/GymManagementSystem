@@ -36,10 +36,10 @@ jobs:
         with:
           context: .
           push: true
-          # tags: ${{ needs.generate_tag.outputs.new_tag }}
-          tags: |
-            latest
-            ${{ needs.generate_tag.outputs.new_tag }}
+          tags: ${{ needs.generate_tag.outputs.new_tag }}
+          # tags: |
+          #   latest
+          #   ${{ needs.generate_tag.outputs.new_tag }}
 
   # docker:
   #   runs-on: ubuntu-latest
