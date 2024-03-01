@@ -37,8 +37,8 @@ jobs:
           push: true
           # tags: ${{ needs.generate_tag.outputs.new_tag }}
           tags: |
-            latest
-            ${{ needs.generate_tag.outputs.new_tag }}
+            registry.klim4ntovich.online/gym-management-app:latest
+            registry.klim4ntovich.online/gym-management-app:${{ needs.generate_tag.outputs.new_tag }}
 
   # docker:
   #   runs-on: ubuntu-latest
