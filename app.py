@@ -34,7 +34,7 @@ def is_logged_in(f):
 		if 'logged_in' in session:
 			return f(*args, **kwargs)
 		else:
-			flash('Nice try, Tricks don\'t work, bud!! Please Login :)', 'danger')
+			flash('Nice try, Tricks don\'t work, bud!! Please Login:)', 'danger')
 			return redirect(url_for('login'))
 	return wrap
 
@@ -137,7 +137,7 @@ def update_password(username):
 			cur.execute("UPDATE info SET password = %s WHERE username = %s", (sha256_crypt.encrypt(new), username))
 			connection.commit()
 			cur.close()
-			flash('New password will be in effect from next login!!', 'info')
+			flash('New password will be in effect from next login!!!', 'info')
 			return redirect(url_for('memberDash', username = session['username']))
 		cur.close()
 		flash('Old password you entered is wrong!!, try again', 'warning')
