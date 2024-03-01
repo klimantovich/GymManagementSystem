@@ -28,15 +28,18 @@ jobs:
     needs: generate_tag
     steps:
       - uses: actions/checkout@v4
-      - run: echo ${{needs.generate_tag.outputs.new_tag}}
-      # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
-      # - name: Build and push
-      #   uses: docker/build-push-action@v5
-      #   with:
-      #     context: .
-      #     push: true
-      #     tags: ${{ steps.meta.outputs.tags }}
+      # - run: echo ${{needs.generate_tag.outputs.new_tag}}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          # tags: ${{ needs.generate_tag.outputs.new_tag }}
+          tags: |
+            latest
+            ${{ needs.generate_tag.outputs.new_tag }}
 
   # docker:
   #   runs-on: ubuntu-latest
