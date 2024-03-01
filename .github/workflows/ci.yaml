@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "main"
+
+jobs:
+  generate_tag:
+    runs-on: ubuntu-latest
+    outputs:
+      new_tag: ${{ steps.tag_version.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@master
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.API_TOKEN_GITHUB }}
+          default_bump: minor
+          default_prerelease_bump: false
+          tag_prefix: ""
+  docker_image:
+    runs-on: ubuntu-latest
+    needs: generate_tag
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            registry.klim4ntovich.online/gym-management-app:latest
+            registry.klim4ntovich.online/gym-management-app:${{ needs.generate_tag.outputs.new_tag }}
+  change_chart_values:
+    runs-on: ubuntu-latest
+    needs: [generate_tag, docker_image]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Change version
+        env:
+          GIT_TAG_NAME: ${{ needs.generate_tag.outputs.new_tag }}
+        run: |
+          git clone https://github.com/klimantovich/us-west-1-cluster.git
+          sed -i.bak 's/"[0-9].[0-9].[0-9]"/"'"$GIT_TAG_NAME"'"/g' us-west-1-cluster/values/gymmanagement-dev-image.yaml
+      - name: Push changes
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+        with:
+          source-directory: "us-west-1-cluster/values"
+          destination-github-username: "klimantovich"
+          destination-repository-name: "us-west-1-cluster"
+          target-directory: "values"
+          target-branch: main
+          commit-message: "Image version has changed by CI/CD pipeline"
