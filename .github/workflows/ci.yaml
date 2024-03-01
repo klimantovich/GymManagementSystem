@@ -23,68 +23,41 @@ jobs:
           default_bump: minor
           default_prerelease_bump: false
           tag_prefix: ""
-  docker:
+  # docker_image:
+  #   runs-on: ubuntu-latest
+  #   needs: generate_tag
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+  #     - name: Build and push
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         push: true
+  #         tags: |
+  #           registry.klim4ntovich.online/gym-management-app:latest
+  #           registry.klim4ntovich.online/gym-management-app:${{ needs.generate_tag.outputs.new_tag }}
+  change_chart_values:
     runs-on: ubuntu-latest
     needs: generate_tag
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          # tags: ${{ needs.generate_tag.outputs.new_tag }}
-          tags: |
-            registry.klim4ntovich.online/gym-management-app:latest
-            registry.klim4ntovich.online/gym-management-app:${{ needs.generate_tag.outputs.new_tag }}
-
-  # docker:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  # - name: Docker meta
-  #   id: meta
-  #   uses: docker/metadata-action@v5
-  #   with:
-  #     images: registry.klim4ntovich.online/gym-management-app
-  # - name: Set up Docker Buildx
-  #   uses: docker/setup-buildx-action@v3
-  # - name: Build and push
-  #   uses: docker/build-push-action@v5
-  #   with:
-  #     context: .
-  #     push: true
-  #     tags: ${{ steps.meta.outputs.tags }}
-  #     labels: ${{ steps.meta.outputs.labels }}
-
-  # change_chart_values:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #     - name: Get tag name
-  #       uses: olegtarasov/get-tag@v2.1.3
-  #       id: tagName
-  #       with:
-  #         tagRegexGroup: 1
-  #     - name: Change version
-  #       run: |
-  #         echo $GIT_TAG_NAME
-  #         - name: Change version
-  #           run: |
-  #             git clone https://github.com/klimantovich/us-west-1-cluster.git
-  #             sed -i.bak 's/"[0-9].[0-9]"/"'"$GIT_TAG_NAME"'"/g' us-west-1-cluster/values/gymmanagement-dev-image.yaml
-  #     - name: Pushes to another repository
-  #       uses: cpina/github-action-push-to-another-repository@main
-  #       env:
-  #         API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
-  #       with:
-  #         source-directory: "us-west-1-cluster/values"
-  #         destination-github-username: "klimantovich"
-  #         destination-repository-name: "us-west-1-cluster"
-  #         target-directory: "values"
-  #         target-branch: main
-  #         commit-message: "Image version has changed by CI/CD pipeline"
+      - name: Change version
+        env:
+          GIT_TAG_NAME: ${{ needs.generate_tag.outputs.new_tag }}
+        run: |
+          git clone https://github.com/klimantovich/us-west-1-cluster.git
+          sed -i.bak 's/"[0-9].[0-9]"/"'"$GIT_TAG_NAME"'"/g' us-west-1-cluster/values/gymmanagement-dev-image.yaml
+      - run: cat us-west-1-cluster/values/gymmanagement-dev-image.yaml
+      # - name: Push changes
+      #   uses: cpina/github-action-push-to-another-repository@main
+      #   env:
+      #     API_TOKEN_GITHUB: ${{ secrets.API_TOKEN_GITHUB }}
+      #   with:
+      #     source-directory: "us-west-1-cluster/values"
+      #     destination-github-username: "klimantovich"
+      #     destination-repository-name: "us-west-1-cluster"
+      #     target-directory: "values"
+      #     target-branch: main
+      #     commit-message: "Image version has changed by CI/CD pipeline"
